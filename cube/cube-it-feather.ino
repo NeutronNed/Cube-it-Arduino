@@ -22,7 +22,7 @@ void error(const __FlashStringHelper*err) {
 }
 
 void setup(void)
-{
+{ 
   while (!Serial);  // required for Flora & Micro
   delay(500);
 
@@ -33,11 +33,14 @@ void setup(void)
   /* Initialise the module */
   Serial.print(F("Initialising the Bluefruit LE module: "));
 
-  if ( !ble.begin(VERBOSE_MODE) )
+  if ( !ble.begin() )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
   Serial.println( F("OK!") );
+
+  ble.echo(false);
+  ble.verbose(false);
 
   if ( FACTORYRESET_ENABLE )
   {
@@ -48,26 +51,15 @@ void setup(void)
     }
   }
 
-  /* Disable command echo from Bluefruit */
-  ble.echo(false);
-
   Serial.println("Requesting Bluefruit info:");
   /* Print Bluefruit information */
   ble.info();
-
-  Serial.println(F("Please use Adafruit Bluefruit LE app to connect in UART mode"));
-  Serial.println(F("Then Enter characters to send to Bluefruit"));
-  Serial.println();
-
-  ble.verbose(false);  // debug info is a little annoying after this point!
 
   /* Wait for connection */
   while (! ble.isConnected()) {
       delay(500);
   }
-
-  Serial.println(F("******************************"));
-
+  
   // LED Activity command is only supported from 0.6.6
   if ( ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
   {
