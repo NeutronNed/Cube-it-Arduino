@@ -18,13 +18,12 @@
 #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
 #define MODE_LED_BEHAVIOUR          "MODE"
 
-#define NUMLEDS  A0
-#define CUBESW0  16
-#define CUBESW1  15
-#define CUBESW2  07
-#define CUBESW3  11
-#define CUBESW4  30
-#define CUBESW5  27
+#define CUBESW0  13
+#define CUBESW1  12
+#define CUBESW2  11
+#define CUBESW3  10
+#define CUBESW4  9
+#define CUBESW5  6
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
@@ -132,10 +131,6 @@ void loop(void)
   // Check for user input
   char n, inputs[BUFSIZE+1];
 
-  if (Serial.available())
-  {
-    //n = Serial.readBytes(inputs, BUFSIZE);
-    //inputs[n] = 0;
       sensors_event_t event; 
        bno.getEvent(&event);
 
@@ -181,29 +176,34 @@ void loop(void)
       ble.println(swNow.cubeSwitch5);
     } 
     swLast = swNow;
-  }
+ 
 
   while ( ble.available() )
-  {
+  { 
     inByte = ble.read();
+
+    Serial.println(inByte);
+    
     switch (inByte) {
       case 'S':  // send Switch values:
-         Serial.print(swNow.cubeSwitch0);
-         Serial.print(",");
-         Serial.print(swNow.cubeSwitch1);
-         Serial.print(",");
-         Serial.print(swNow.cubeSwitch2);
-         Serial.print(",");
-         Serial.print(swNow.cubeSwitch3);
-         Serial.print(",");
-         Serial.print(swNow.cubeSwitch4);
-         Serial.print(",");
-         Serial.println(swNow.cubeSwitch5);
+         ble.print(swNow.cubeSwitch0);
+         ble.print(",");
+         ble.print(swNow.cubeSwitch1);
+         ble.print(",");
+         ble.print(swNow.cubeSwitch2);
+         ble.print(",");
+         ble.print(swNow.cubeSwitch3);
+         ble.print(",");
+         ble.print(swNow.cubeSwitch4);
+         ble.print(",");
+         ble.println(swNow.cubeSwitch5);
          break;
          
       case 'F':  // set the Face color as specified
-         int face = Serial.parseInt();
-         int color = Serial.parseInt();
+         int face = ble.parseInt();
+         int color = ble.parseInt();
+         Serial.print(face);
+         Serial.println(color);
          face = 5 - constrain(face, 0, 5);
          color = constrain(color, 0, 4);
          colorFace(face, colorValue[color]);  //set the specified face to that color
@@ -246,34 +246,34 @@ void colorFace(int face1, long c) {
 //Check the switches and if there are changes, send out the information
 void switchCheck(){
   if (swNow.cubeSwitch0 != swLast.cubeSwitch0){
-    Serial.print("S0");
-    Serial.print(",");
-    Serial.println(swNow.cubeSwitch0);
+    ble.print("S0");
+    ble.print(",");
+    ble.println(swNow.cubeSwitch0);
   }
   if (swNow.cubeSwitch1 != swLast.cubeSwitch1){
-    Serial.print("S1");
-    Serial.print(",");
-    Serial.println(swNow.cubeSwitch1);
+    ble.print("S1");
+    ble.print(",");
+    ble.println(swNow.cubeSwitch1);
   }
   if (swNow.cubeSwitch2 != swLast.cubeSwitch2){
-    Serial.print("S2");
-    Serial.print(",");
-    Serial.println(swNow.cubeSwitch2);
+    ble.print("S2");
+    ble.print(",");
+    ble.println(swNow.cubeSwitch2);
   }
   if (swNow.cubeSwitch3 != swLast.cubeSwitch3){
-    Serial.print("S3");
-    Serial.print(",");
-    Serial.println(swNow.cubeSwitch3);
+    ble.print("S3");
+    ble.print(",");
+    ble.println(swNow.cubeSwitch3);
   }
   if (swNow.cubeSwitch4 != swLast.cubeSwitch4){
-    Serial.print("S4");
-    Serial.print(",");
-    Serial.println(swNow.cubeSwitch4);
+    ble.print("S4");
+    ble.print(",");
+    ble.println(swNow.cubeSwitch4);
   }
   if (swNow.cubeSwitch5 != swLast.cubeSwitch5){
-    Serial.print("S5");
-    Serial.print(",");
-    Serial.println(swNow.cubeSwitch5);
+    ble.print("S5");
+    ble.print(",");
+    ble.println(swNow.cubeSwitch5);
   }
 
 }
