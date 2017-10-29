@@ -1,22 +1,19 @@
 # Example of interaction with a BLE UART device using a UART service
 # implementation.
-# Author: Tony DiCola
+# Author: Kristina Durivage based on the uart service demo by Tony DiCola
+import os
 import Adafruit_BluefruitLE
+import time
+import random
 from Adafruit_BluefruitLE.services import UART
 
-
-# Get the BLE provider for the current platform.
 ble = Adafruit_BluefruitLE.get_provider()
+runTest = True
+ts = time.time()
 
-
-# Main function implements the program logic so it can run in a background
-# thread.  Most platforms require the main thread to handle GUI events and other
-# asyncronous events like BLE actions.  All of the threading logic is taken care
-# of automatically though and you just need to provide a main function that uses
-# the BLE provider.
 def main():
-    # Clear any cached data because both bluez and CoreBluetooth have issues with
-    # caching data and it going stale.
+    global runTest
+    global ts
     ble.clear_cached_data()
 
     # Get the first available BLE network adapter and make sure it's powered on.
@@ -24,17 +21,13 @@ def main():
     adapter.power_on()
     print('Using adapter: {0}'.format(adapter.name))
 
-    # Disconnect any currently connected UART devices.  Good for cleaning up and
-    # starting from a fresh state.
     print('Disconnecting any connected UART devices...')
     UART.disconnect_devices()
-
-    # Scan for UART devices.
-    print('Searching for UART device...')
+    
+    print('Searching for Bluetooth UART device...')
     try:
         adapter.start_scan()
-        # Search for the first UART device found (will time out after 60 seconds
-        # but you can specify an optional timeout_sec parameter to change it).
+        # TODO: Can I connect to a specific device?? 
         device = UART.find_device('EB:0A:91:D4:5E:85fghdfgdfg')
         if device is None:
             raise RuntimeError('Failed to find UART device!')
@@ -46,37 +39,57 @@ def main():
     device.connect()  # Will time out after 60 seconds, specify timeout_sec parameter
                       # to change the timeout.
 
-    # Once connected do everything else in a try/finally to make sure the device
-    # is disconnected when done.
     try:
         # Wait for service discovery to complete for the UART service.  Will
         # time out after 60 seconds (specify timeout_sec parameter to override).
-        print('Discovering services...')
         UART.discover(device)
-
-        # Once service discovery is complete create an instance of the service
-        # and start interacting with it.
         uart = UART(device)
-
-        # Write a string to the TX characteristic.
-        uart.write('Hello world!\r\n')
-        print("Sent 'Hello world!' to the device.")
-
-        # Now wait up to one minute to receive data from the device.
-        print('Waiting up to 60 seconds to receive data from the device...')
-        received = uart.read(timeout_sec=60)
-        if received is not None:
-            # Received data, print it out.
-            print('Received: {0}'.format(received))
-        else:
-            # Timeout waiting for data, None is returned.
-            print('Received no data!')
+        
+        command(uart)
+        
+        # read continuously
+        while runTest :
+            received = uart.read(timeout_sec=60)
+            
+            if (time.time() - ts) >= (60 * 2):
+                runTest = False
+            
+            if received is not None:
+                print('Received: {0}'.format(received))
+            else:
+                print('Received no data, is your device on?')
     finally:
         # Make sure device is disconnected on exit.
+        print('test over!');
         device.disconnect()
 
+def command(uart):
+    global ts
+    # choose a random color
+    colorNum = str(random.randint(1,4))
+    colorName = ''
+    if colorNum is '0':
+        colorName = 'off'
+    elif colorNum is '1':
+        colorName = 'red'
+    elif colorNum is '2':
+        colorName = 'green'
+    elif colorNum is '3':
+        colorName = 'blue'
+    elif colorName is '4':
+        colorName = 'white'
 
-# Initialize the BLE system.  MUST be called before other BLE calls!
+    # choose a random side
+    sideNum = str(random.randint(0,6))
+    
+    print('F,'+ sideNum + ',' + colorNum + '\r\n');
+    
+    uart.write('F,'+ sideNum + ',' + colorNum + '\r\n')
+    ts = time.time()
+    # voice command
+    os.system('flite -t "Press the ' + colorName + 'button!" ')
+
+
 ble.initialize()
 
 # Start the mainloop to process BLE events, and run the provided function in
