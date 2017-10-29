@@ -53,9 +53,7 @@ void error(const __FlashStringHelper*err) {
 
 void setup(void)
 { 
-  while (!Serial);  // required for Flora & Micro
   delay(500);
-
   Serial.begin(115200);
 
   if(!bno.begin())
@@ -135,45 +133,51 @@ void loop(void)
        bno.getEvent(&event);
 
       //send XYZ coordinate to Pi
-       ble.print("X");
+       ble.print("X,");
        ble.print(event.orientation.x, 0);
-       ble.print(", Y");
+       ble.print(", Y,");
        ble.print(event.orientation.y, 0);
-       ble.print(", Z");
+       ble.print(", Z,");
        ble.print(event.orientation.z, 0);
-       ble.println("");
+       ble.print(",");
    
     swNow = debounceSwitch();     // read the input switches:
   
     if (swNow.cubeSwitch0 != swLast.cubeSwitch0){
-      ble.print("S0");
+      ble.print("S,0");
       ble.print(",");
-      ble.println(swNow.cubeSwitch0);
+      ble.print(swNow.cubeSwitch0);
+      ble.print(",");
     }
     if (swNow.cubeSwitch1 != swLast.cubeSwitch1){
-      ble.print("S1");
+      ble.print("S,1");
       ble.print(",");
-      ble.println(swNow.cubeSwitch1);
+      ble.print(swNow.cubeSwitch1);
+      ble.print(",");
     }
     if (swNow.cubeSwitch2 != swLast.cubeSwitch2){
-      ble.print("S2");
+      ble.print("S,2");
       ble.print(",");
-      ble.println(swNow.cubeSwitch2);
+      ble.print(swNow.cubeSwitch2);
+      ble.print(",");
     }
     if (swNow.cubeSwitch3 != swLast.cubeSwitch3){
-      ble.print("S3");
+      ble.print("S,3");
       ble.print(",");
-      ble.println(swNow.cubeSwitch3);
+      ble.print(swNow.cubeSwitch3);
+      ble.print(",");
     }
     if (swNow.cubeSwitch4 != swLast.cubeSwitch4){
-      ble.print("S4");
+      ble.print("S,4");
       ble.print(",");
-      ble.println(swNow.cubeSwitch4);
+      ble.print(swNow.cubeSwitch4);
+      ble.print(",");
     }
     if (swNow.cubeSwitch5 != swLast.cubeSwitch5){
-      ble.print("S5");
+      ble.print("S,5");
       ble.print(",");
-      ble.println(swNow.cubeSwitch5);
+      ble.print(swNow.cubeSwitch5);
+      ble.print(",");
     } 
     swLast = swNow;
  
@@ -237,6 +241,10 @@ struct SWITCH debounceSwitch () {
 
 // Fill the dots one after the other with a color
 void colorFace(int face1, long c) {
+  for (int i = 0; i < 24; i++){
+    strip.setPixelColor(i, 0);
+  }
+  
   for(int i=face1*4; i<face1*4+4; i++) {
       strip.setPixelColor(i, c);
   }
